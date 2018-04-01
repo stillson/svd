@@ -1,0 +1,38 @@
+[req]
+default_bits = 2048
+default_md = sha256
+distinguished_name = dn
+req_extensions = req_ext
+[ dn ]
+commonName                      = Common Name (eg, YOUR name)
+commonName_max                  = 64
+[alt_names]
+URI.1 = XXchangeXX
+[req_ext]
+subjectKeyIdentifier=hash
+basicConstraints=CA:FALSE
+keyUsage=digitalSignature, keyEncipherment, keyAgreement, dataEncipherment
+extendedKeyUsage=serverAuth,clientAuth
+subjectAltName = @alt_names
+[ ca ]
+default_ca = CA_default
+[ CA_default ]
+dir             = .
+certs           = $dir/castuff/certsdb
+new_certs_dir   = $certs
+database        = $dir/castuff/index.txt
+certificate     = $dir/INT.crt
+private_key     = $dir/INT.key
+serial          = $dir/castuff/serial
+RANDFILE        = $dir/castuff/private/.rand
+default_md = sha256
+policy = pol_foo
+[ pol_foo ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+

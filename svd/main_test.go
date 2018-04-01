@@ -1,0 +1,177 @@
+package main
+
+import (
+	"crypto/x509"
+	"encoding/pem"
+	"testing"
+)
+
+func TestLoadCertOne(t *testing.T) {
+
+	_, b := loadCert("TEST.txt")
+
+	if b != nil {
+		t.Fail()
+	}
+}
+
+func TestLoadCertTwo(t *testing.T) {
+
+	_, b := loadCert("NOTEST.txt")
+
+	if b == nil {
+		t.Fail()
+	}
+}
+
+const (
+	testRoot = `
+-----BEGIN CERTIFICATE-----
+MIIDGDCCAgCgAwIBAgIJAJnnPEPnQu6/MA0GCSqGSIb3DQEBCwUAMB4xCzAJBgNV
+BAYTAlVTMQ8wDQYDVQQKDAZTUElGRkUwHhcNMTgwMzMxMjMxNzU3WhcNMjMwMzMw
+MjMxNzU3WjAeMQswCQYDVQQGEwJVUzEPMA0GA1UECgwGU1BJRkZFMIIBIjANBgkq
+hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnsPj+u6tI1pgYvw8Y72iH1QEAxgbMFJ7
+MAN0Xl/2PGkIjN5Jf1CCHkn81UnKlxebRovORJECSXmEl0+hsBvWPTI8btHXz5FN
+/W+Iuql+Boip12OcO0Zo066J01DQpmASNuv0pKM5TMeoePNUmHPWtGN8ycqduhBQ
+RD/003wqJqvaotRaUTITnsuOkOne/LXaAxi8ap0se0U0uHffiYvrLnb3bEtXbBiT
+vNrdThMs/E1/W+Ca7W2IOIf4XBIb27oODygEUHuBbI8c5+mHOwDWLQJ2SudvIYnU
+aqgXICUuqeq+WD8HWQZ1gPAhtdv5SsPvXPbM8tRogUsDW/ICuTsaSwIDAQABo1kw
+VzAdBgNVHQ4EFgQUHcHH93V9XdixAHytXNI8t1utZu8wDAYDVR0TBAUwAwEB/zAL
+BgNVHQ8EBAMCAYYwGwYDVR0RBBQwEoYQc3BpZmZlOi8vZm9vLmNvbTANBgkqhkiG
+9w0BAQsFAAOCAQEALoZ3++ZTIovwSQM+w0nmFKgub+Mk98cWGJFJDWchNerAV51S
+f79Jmd2n4ZNQGxFigGCyt9Qz/K+qM/tRFMRJXFjr/0vBRyFrKMufp3RNKLtuclCv
+lDO87efwUnsxTfi7cj0oPTiMUtPsoLNSxuTvi7EkR9VA3OJs0PcajPdMRVU59m7P
+by4SDWfS0K/kN1AVY+hBWofXJCexjQ44jdyuq/znetMK7O4y+ScEUOejUPFf0fdr
+s9e88CAYNFxM16m/fFEoCt3/v05TNz1bpg4hiUkM17iBa69F0MmpCjGgEpO1FdhT
+4PrSJocY+r04vLzjxkQK9gLqQB4qklJo92xoYw==
+-----END CERTIFICATE-----
+`
+	testInt = `
+-----BEGIN CERTIFICATE-----
+MIIDADCCAeigAwIBAgIBATANBgkqhkiG9w0BAQsFADAeMQswCQYDVQQGEwJVUzEP
+MA0GA1UECgwGU1BJRkZFMB4XDTE4MDMzMTIzMTc1OFoXDTI4MDMyODIzMTc1OFow
+DjEMMAoGA1UEAwwDaW50MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+xZv6kXzrCdH++wqw4CK7OKwHFM9cRnJ/naymVTaRed38++fofmaQ5UhhQSMO0kD+
+iIdYqzCAVhVneHV73BVObZ4Hem7dF3iyy/27zn5Ikbr7fr20NvWlZSvIZuiSHA0U
+jFiAb3oFEKeEKBCn4DtLHQIi/fJxqao/a/vzBdQ/UDO18oqRqPvp/7sbqqB6sLTE
+S2f+sYARHB2z9MAB0xN8zmrY0plqhohPFEizzkqXhe7qm+wB4CHXpD0V2ltTG8eS
+BMzEmCg5hg3f6hSxcgPsEgTkZ3S1ZhMdBgTJqZCQI6uk6Zw63iXjAGXv0KVetw5Z
+WcTN17FUmqEAmkimJ3prpQIDAQABo1kwVzAdBgNVHQ4EFgQUaqrvjV7bF9Btvyg7
+8DdvoDa8/tMwDAYDVR0TBAUwAwEB/zALBgNVHQ8EBAMCAYYwGwYDVR0RBBQwEoYQ
+c3BpZmZlOi8vZm9vLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEANhS3W9aopPSpnftq
+k6wcGUlYqBLbnvNiiUSfa9lJhxb0r6seuRlTVXssjz6blt5L4VyWfa7FcM+qP9Xv
+SZByntbtZxtyDluLTkcU3OZlcOqdrfUsGtvt1sbVV1JwVBRXOAXeg1c1hYgQD/Zc
+FwnL4RpiITllkWNJik7Lx3sdSzvJ66Zfq9nDl44rZgeC371LbLekQJph3cvBF5Rp
+yVBrdE3JhKHWCOK/asdSVsN9YK1f/d7jNTgPYlsa++UWIP0+XTZxrO/hDOeRPhT2
+3M96wh1uQDBIUW2OQGfABI98ji85Umkf4dcEo5vRtGgM2a9+j69yF0SR41WcXLWJ
+5gS+lQ==
+-----END CERTIFICATE-----
+`
+	goodCertPEM = `
+-----BEGIN CERTIFICATE-----
+MIIDFzCCAf+gAwIBAgIBAjANBgkqhkiG9w0BAQsFADAOMQwwCgYDVQQDDANpbnQw
+HhcNMTgwMzMxMjMxODMwWhcNMjgwMzI4MjMxODMwWjAPMQ0wCwYDVQQDDAR0ZXN0
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtITOJweuyE5GU4UcZeIt
+X9qY5YGDg1GADHQWX/OMdga+K3AqPG5IytWe/KIkvaVjfFVM1TYvA8NhT+MNGWO7
+AxiQ+9rTGV/FNfe0LEhacyP2+cpI5v+zFPQ7hUYdhmtBKxbUPPoRilvOnpkORf4s
+nICaAqtyEhmL1MCDEvoMmaAqw03Wq4PAcY/u9G8J4UPljxf/FwYMB+9zx0+foV5w
+ejYy/mAyEimE5uRtDTyrdros7d+Q/BhMQqZbI043oySCGY6fEJlQQsOLOo6ZrYQv
+sIFkhl+JQyxP7UX76pLQp+AXSTAYrE9B0CPiHlkke8gkpXWlXW7nWbJgStn/gyFX
+ZwIDAQABo38wfTAdBgNVHQ4EFgQUOmTPsteeuANWPNHB84T3H/oHRmcwCQYDVR0T
+BAIwADALBgNVHQ8EBAMCA7gwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMC
+MCUGA1UdEQQeMByGGnNwaWZmZTovL2Zvby5jb20vcm9vdC90ZXN0MA0GCSqGSIb3
+DQEBCwUAA4IBAQBz3foqqHUF8tOfsLcSPHMQIwiqe3ytnyLipxZXSfKg5iYOa99V
+oXuwAgbwFoXeWhF706VFTdvzk9nBWGtGOWN7J9rMBw74c7+YvuDJJsQQaEgMzvHX
+ApTWHhl+fS8k68Eo4MlLmZY42TiVpQWM1/glSwBE7b9WvXa1qX3+a9CQuZt6tlAL
+GpXzsztp7HDGlQIJqrBMLTUDEGmB+lGb9xWpiA38WVtaQ9SYGVEuDCJcR5NCLTN2
+OV6jct5r5xmlw4F22VJUF28aN/eTAwbS6gFLvpZQFRvToAnCD1KHALf6G9bzpXzd
+0oS9Ox6WPCQ+Ja+xNzyph5sCYKhqB0qAS9XL
+-----END CERTIFICATE-----
+`
+	badCertPEM = `
+-----BEGIN CERTIFICATE-----
+MIIDHzCCAgegAwIBAgIBBDANBgkqhkiG9w0BAQsFADAOMQwwCgYDVQQDDANpbnQw
+HhcNMTgwMzMxMjMyODQyWhcNMjgwMzI4MjMyODQyWjASMRAwDgYDVQQDDAdiYWR0
+ZXN0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz79iwTEVUubP7lPz
+CFCY73NWDvmUoML+y7Lvdd2jBR6QTaadq+O/nyseHBm9hv+85uB3hYRnk+ureyU0
+8VMRWYUhqyTs5nF/UckUxj5SWeIalU85GQdxAtafKzFPEDBHalKAqToc4lDGz6Lr
+sHEsQraijSWo0Oz/M+qqYrlB1McTC60UPweyXi+7m3l1fmapHL20ZA7a+LeEg8On
+gfMHOpPBv2ExmIetyVkIC8JMxLQI/E1Tr730Q8p4pmWnOA3i1oQ2nvNdWpjjK4AM
+NTxtF9mlZ6sFii7R1Gl/NMiOT3tL51rnzqNyB4RVjqcBpyACHihaEJZ/g/dSKWe1
+HCRkuQIDAQABo4GDMIGAMB0GA1UdDgQWBBTjUNYUbyzxVTLGwBA3pOQu0cN95TAJ
+BgNVHRMEAjAAMAsGA1UdDwQEAwIDuDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYB
+BQUHAwIwKAYDVR0RBCEwH4Ydc3BpZmZlOi8vZm9vLmNvbS9yb290L2JhZHRlc3Qw
+DQYJKoZIhvcNAQELBQADggEBAETU6jMN+n/PepuB7d1fGQKfJqIGKzdnoESvQUoc
+FHaDTjLopGRed2Ourd++5HZlpXE8FROXK0LCaj3jKfp0sKBmmsKNhOiBQjl/iogl
+Q67S7czvsbn7erEoi7aMMByH6NBfOIUMkaFltOom/1JOZoFZycwJrjDEyE41XVTO
+2GNALuolY7OWgKdiaub05Qmnb/WrNWOM0ntTm5HluqTPZ4Y3aHcR5wdGcxU7P8Pk
+A57hYEU87gWNzUs/B4Z7M4CBQTNoYLG34JuAr3BzCKU5pF1fkEPZhDs1ksrK9TiJ
+jMikbx668fPzvzrppOZNlG2jMmgDIIlqlYakVVgTIF9Tfng=
+-----END CERTIFICATE-----
+`
+	wrongCAPEM = `
+-----BEGIN CERTIFICATE-----
+MIIDJzCCAg+gAwIBAgIBAjANBgkqhkiG9w0BAQsFADAeMQswCQYDVQQGEwJVUzEP
+MA0GA1UECgwGU1BJRkZFMB4XDTE4MDMzMTE5NTc0NVoXDTI4MDMyODE5NTc0NVow
+DzENMAsGA1UEAwwEdGVzdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+ANBQ+Vl9xwm9w6aYIJvnkUWEADB65d/bDtduPTF5clv+aSPYbXpq/GxFBUE3tpvA
+BoEwNMWevs3ZtPTIViyDX31pYv+97A1sFUuzbhw58ufa2+cj2Ap+lEsbMEff3/Yy
+SiYZ+sao+6AD4/Oxngq6bHMbLrhxYoGHAT+NT9XX15BYuHXWIEFevE7L0UJNPpUK
+rs15kBIKngN7pAFLe0SHylS6/j1LmZZfYT/VimJQ3ZK73IIWrgV1XpTaLT7KIYbk
+DbxHvJ1FOmc2dLnd4vN511PiXCgMbYb7qIa6uAPFBrt7DBARLP54VpKAySqOwDwd
+II5Uo/KnVzaoyTybbYukjjsCAwEAAaN/MH0wHQYDVR0OBBYEFKmkRDaTxATZ4JPe
+H7c5eQi6mXu4MAkGA1UdEwQCMAAwCwYDVR0PBAQDAgO4MB0GA1UdJQQWMBQGCCsG
+AQUFBwMBBggrBgEFBQcDAjAlBgNVHREEHjAchhpzcGlmZmU6Ly9mb28uY29tL3Jv
+b3QvdGVzdDANBgkqhkiG9w0BAQsFAAOCAQEAqdc+hZv3+XMkhDnk27udO3f30VTS
+wi4kU9p3ZT6K3laqdXJz4IvutGLygscBch21UK9oyzzi/pNSAS3YAk6E8jfEdYr/
+t5M7Slt8aCl3pvD3KzmAJDZ2RgH3SeveEvC+NuFDGPebzF+q4oH3ltHKlDMkVo5G
+utmdbSskI1UNHQQGrD3BzAVdOi1ravkTqEGV+E2HiKSiNqGCAMbWb7ckE6mOso5h
+ydF9/AzCHMhh14XXtFO+hhDMum/SB7sR7i97QedeMnZjvCFSwJlB8+YGXfVH/LWa
+5OarxXw1ua5bpoM8mhNRpWfgGDRBJEL9o6SzU3E918PRqJ5NUDQPxr+I2A==
+-----END CERTIFICATE-----
+`
+)
+
+var goodCert *x509.Certificate
+var badCert *x509.Certificate
+var wrongCA *x509.Certificate
+
+func setupCerts() {
+	rootCP = x509.NewCertPool()
+	rootCP.AppendCertsFromPEM([]byte(testRoot))
+
+	intCP = x509.NewCertPool()
+	intCP.AppendCertsFromPEM([]byte(testInt))
+
+	block, _ := pem.Decode([]byte(goodCertPEM))
+	goodCert, _ = x509.ParseCertificate(block.Bytes)
+
+	block, _ = pem.Decode([]byte(badCertPEM))
+	badCert, _ = x509.ParseCertificate(block.Bytes)
+
+	block, _ = pem.Decode([]byte(wrongCAPEM))
+	wrongCA, _ = x509.ParseCertificate(block.Bytes)
+}
+
+func TestCheckSvid(t *testing.T) {
+	setupCerts()
+
+	sans := []string{"spiffe://foo.com/root/test"}
+
+	err := checkSvid(sans, goodCert)
+	if err != nil {
+		t.Fail()
+	}
+
+	err = checkSvid(sans, badCert)
+	if err == nil {
+		t.Fail()
+	}
+
+	err = checkSvid(sans, wrongCA)
+	if err == nil {
+		t.Fail()
+	}
+	//|CN=test |CN=badtest |no matching SPIFFE id: SPIFFE ID mismatch |CN=test |bad cert: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "SPIFFE")
+
+}
