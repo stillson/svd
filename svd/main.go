@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"flag"
 )
 
 // Constants
@@ -98,6 +99,10 @@ func svidHandler(w http.ResponseWriter, r *http.Request) {
 
 // Main
 func main() {
+	// command line arguments
+	address := flag.String("addr", ADDRESS, "adress to run on")
+	flag.Parse()
+
 	// load config (i.e. SPIFFE ID)
 	rvString, err := ioutil.ReadFile(SVIDFILE)
 	if err != nil {
@@ -144,7 +149,7 @@ func main() {
 	http.HandleFunc("/", svidHandler)
 
 	httpServer := &http.Server{
-		Addr:      ADDRESS,
+		Addr:      *address,
 		TLSConfig: tlsConfig,
 	}
 
