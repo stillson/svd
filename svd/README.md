@@ -15,6 +15,11 @@ directory, and run
 
     svd
 
+To run svd on a different address than the default (port 8443), you can
+use the --addr flag
+
+    svd --addr [address]:port
+    
 ##### Important Files
 In the directory where svd lives there are several important files.
 
